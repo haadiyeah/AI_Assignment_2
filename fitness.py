@@ -3,8 +3,6 @@ from keras.models import Sequential
 from keras.layers import Dense
 from sklearn.model_selection import train_test_split
 
-
-
 def create_population(size, num_features):
     population = [];
     for i in range(size):
@@ -41,7 +39,7 @@ def fitness(data_features, number_of_features, labels):
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=1, batch_size=32)
+    model.fit(X_train, y_train, epochs=10, batch_size=32)
     fitness_value = model.evaluate(X_test, y_test)
     return fitness_value[1];    
 

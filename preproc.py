@@ -14,8 +14,8 @@ def read_csv_files(directory):
             df = pd.read_csv(os.path.join(directory, filename), usecols=range(298, 638))    # 298 - 637 columns
             file_parts = filename.split('-')
             if file_parts[2] == '03':
-                df['label'] = 1
+                df['label'] = 0
             elif file_parts[2] == '04':
-                df['label'] = 2
+                df['label'] = 1
             data[filename] = df
     return combine_data(data)

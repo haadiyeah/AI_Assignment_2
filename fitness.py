@@ -1,6 +1,8 @@
 import random
+import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 
 def create_population(size, num_features):
@@ -23,8 +25,43 @@ def get_feature_cols(data_df, chromosome):
     chromosome.pop()  # Remove the appended 0
     return feature_cols;
 
-def fitness(data_features, number_of_features, labels):
-    X_train, X_test, y_train, y_test = train_test_split(data_features, labels, test_size=0.2, random_state=42)  # 80% training and 20% test, X is data_features, y is labels
+def fitness(data_features, number_of_features, labels, chromosome_index, population_size):
+
+    labels = pd.DataFrame(labels)
+    data_features = data_features.reset_index(drop=True)
+    labels = labels.reset_index(drop=True)
+
+    # split data into chunks
+    # chunk_num = population_size * 2;
+    # chunk_size = int(len(data_features) // chunk_num);
+    
+    fraction = 1 / population_size
+    # Concatenate data_features and labels along the column axis
+    data_with_labels = pd.concat([data_features, labels], axis=1)
+
+    randomized_data_with_labels = data_with_labels.sample(frac=fraction, random_state=42)
+
+    # Split shuffled_data_with_labels back into data and labels
+    data_chunk = randomized_data_with_labels.iloc[:, :-1]
+    labels_chunk = randomized_data_with_labels.iloc[:, -1]
+
+    print(data_chunk.shape)
+    print(labels_chunk.shape)
+    print(len(set(labels_chunk)))
+
+    X_train, X_test, y_train, y_test = train_test_split(data_chunk, labels_chunk, test_size=0.2, random_state=42)  # 80% training and 20% test, X is data_features, y is labels
+    
+    # Random under-sampling
+    rus = RandomUnderSampler(random_state=42)
+    X_train_res, y_train_res = rus.fit_resample(X_train, y_train)
+    
+    # get the removed data
+    removed_data = X_train[~X_train.index.isin(X_train_res.index)]
+    removed_labels = y_train[~y_train.index.isin(y_train_res.index)]
+    
+    # append to the test data
+    X_test = pd.concat([X_test, removed_data])
+    y_test = pd.concat([y_test, removed_labels])    
     
     # binary classification
     n_outputs = 1
@@ -39,20 +76,17 @@ def fitness(data_features, number_of_features, labels):
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train, y_train, epochs=10, batch_size=32)
+    model.fit(X_train_res, y_train_res, epochs=10, batch_size=32)
     fitness_value = model.evaluate(X_test, y_test)
-    return fitness_value[1];    
+    return fitness_value[1];
 
-def calc_fitness(data_df, chromosome):
+def calc_fitness(data_df, chromosome, chromosome_index, population_size):
     data_features = get_feature_cols(data_df, chromosome);
-    #print 1 row of data_features
-    print(data_features.iloc[0]);
+    # print 1 row of data_features
+    # print(data_features.iloc[0]);
     
     num_of_features = len(data_features.columns);
-    print("Number of features: ", num_of_features);
-    
+    print("Number of filtered features: ", num_of_features);
     labels = get_labels(data_df);
     
-
-    print(num_of_features);
-    return fitness(data_features, num_of_features, labels);
+    return fitness(data_features, num_of_features, labels, chromosome_index, population_size);

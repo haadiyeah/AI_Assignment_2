@@ -14,42 +14,20 @@ def create_population(size, num_features):
         population.append(chromosome);
     return population;
 
-def get_labels(data_df):
-    labels = data_df.iloc[:, -1].values;
+def get_labels_df(data_df):
+    labels = data_df.iloc[:, -1].to_frame();
     return labels;
 
-def get_feature_cols(data_df, chromosome):
+def get_feature_df(data_df, chromosome):
     chromosome.append(0)  # Append 0 to the end of chromosome for mask to work
     mask = [bool(val) for val in chromosome]
     feature_cols = data_df.loc[:, mask]
     chromosome.pop()  # Remove the appended 0
     return feature_cols;
 
-def fitness(data_features, number_of_features, labels, chromosome_index, population_size):
-
-    labels = pd.DataFrame(labels)
-    data_features = data_features.reset_index(drop=True)
-    labels = labels.reset_index(drop=True)
-
-    # split data into chunks
-    # chunk_num = population_size * 2;
-    # chunk_size = int(len(data_features) // chunk_num);
-    
-    fraction = 1 / population_size
-    # Concatenate data_features and labels along the column axis
-    data_with_labels = pd.concat([data_features, labels], axis=1)
-
-    randomized_data_with_labels = data_with_labels.sample(frac=fraction, random_state=42)
-
-    # Split shuffled_data_with_labels back into data and labels
-    data_chunk = randomized_data_with_labels.iloc[:, :-1]
-    labels_chunk = randomized_data_with_labels.iloc[:, -1]
-
-    print(data_chunk.shape)
-    print(labels_chunk.shape)
-    print(len(set(labels_chunk)))
-
-    X_train, X_test, y_train, y_test = train_test_split(data_chunk, labels_chunk, test_size=0.2, random_state=42)  # 80% training and 20% test, X is data_features, y is labels
+def fitness(data_chunk, number_of_features, labels_chunk):
+    # 80% training and 20% test, X is data_features, y is labels
+    X_train, X_test, y_train, y_test = train_test_split(data_chunk, labels_chunk, test_size=0.2, random_state=42)  
     
     # Random under-sampling
     rus = RandomUnderSampler(random_state=42)
@@ -81,12 +59,31 @@ def fitness(data_features, number_of_features, labels, chromosome_index, populat
     return fitness_value[1];
 
 def calc_fitness(data_df, chromosome, chromosome_index, population_size):
-    data_features = get_feature_cols(data_df, chromosome);
-    # print 1 row of data_features
-    # print(data_features.iloc[0]);
-    
+    data_features = get_feature_df(data_df, chromosome);
     num_of_features = len(data_features.columns);
-    print("Number of filtered features: ", num_of_features);
-    labels = get_labels(data_df);
+    labels = get_labels_df(data_df);
     
-    return fitness(data_features, num_of_features, labels, chromosome_index, population_size);
+    print("Number of filtered features: ", num_of_features);
+    
+    data_features = data_features.reset_index(drop=True)
+    labels = labels.reset_index(drop=True)
+    
+    fraction = 1 / population_size
+    # Concatenate data_features and labels along the column axis
+    data_with_labels = pd.concat([data_features, labels], axis=1)
+
+    randomized_data_with_labels = data_with_labels.sample(frac=fraction, random_state=42)
+    randomized_indices = randomized_data_with_labels.index
+
+    # Split shuffled_data_with_labels back into data and labels
+    data_chunk = randomized_data_with_labels.iloc[:, :-1]
+    labels_chunk = randomized_data_with_labels.iloc[:, -1]
+
+    # remove these data and labels from the original data and labels
+    data_df = data_df[~data_df.index.isin(randomized_indices)]
+
+    print(data_chunk.shape)
+    print(labels_chunk.shape)
+    print(len(set(labels_chunk)))
+    
+    return data_df, fitness(data_chunk, num_of_features, labels_chunk);

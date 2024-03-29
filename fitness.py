@@ -2,6 +2,7 @@ import random
 import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.optimizers import Adam
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 
@@ -25,9 +26,9 @@ def get_feature_df(data_df, chromosome):
     chromosome.pop()  # Remove the appended 0
     return feature_cols;
 
-def fitness(data_chunk, number_of_features, labels_chunk):
+def fitness(data_df, number_of_features, labels_df):
     # 80% training and 20% test, X is data_features, y is labels
-    X_train, X_test, y_train, y_test = train_test_split(data_chunk, labels_chunk, test_size=0.2, random_state=42)  
+    X_train, X_test, y_train, y_test = train_test_split(data_df, labels_df, test_size=0.2, random_state=42)  
     
     # Random under-sampling
     rus = RandomUnderSampler(random_state=42)
@@ -41,24 +42,22 @@ def fitness(data_chunk, number_of_features, labels_chunk):
     X_test = pd.concat([X_test, removed_data])
     y_test = pd.concat([y_test, removed_labels])    
     
+    #create optimizer
+    opt = Adam(learning_rate=0.0001)    # decreasing the learning rate for less loss
+    
     # binary classification
     n_outputs = 1
     model = Sequential()
     model.add(Dense(120, input_dim=number_of_features, activation='relu'))
-    model.add(Dense(80, activation='relu'))
-    model.add(Dense(80, activation='relu'))
-    model.add(Dense(80, activation='relu'))
-    model.add(Dense(80, activation='relu'))
-    model.add(Dense(80, activation='relu'))
-    model.add(Dense(100, activation='relu'))
-    model.add(Dense(100, activation='relu'))
+    model.add(Dense(40, activation='relu'))
+    model.add(Dense(60, activation='relu'))
     model.add(Dense(n_outputs, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.fit(X_train_res, y_train_res, epochs=10, batch_size=32)
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
+    model.fit(X_train_res, y_train_res, epochs=5, batch_size=64)
     fitness_value = model.evaluate(X_test, y_test)
     return fitness_value[1];
 
-def calc_fitness(data_df, chromosome, chunk_size):
+def calc_fitness(data_df, chromosome):
     data_features = get_feature_df(data_df, chromosome);
     labels = get_labels_df(data_df);
     
@@ -69,21 +68,4 @@ def calc_fitness(data_df, chromosome, chunk_size):
     num_of_features = len(data_features.columns);
     print("Number of filtered features: ", num_of_features);
     
-    # Concatenate data_features and labels along the column axis
-    data_with_labels = pd.concat([data_features, labels], axis=1)
-
-    randomized_data_with_labels = data_with_labels.sample(n=chunk_size, random_state=42)
-    randomized_indices = randomized_data_with_labels.index
-
-    # Split shuffled_data_with_labels back into data and labels
-    data_chunk = randomized_data_with_labels.iloc[:, :-1].reset_index(drop=True)
-    labels_chunk = randomized_data_with_labels.iloc[:, -1].reset_index(drop=True)
-
-    # remove these data and labels from the original data and labels
-    data_df = data_df[~data_df.index.isin(randomized_indices)]
-
-    print("Data chunk rows: ", data_chunk.shape[0])
-    print("Label chunk rows: ", labels_chunk.shape[0])
-    print("Labels: ", set(labels_chunk))
-    
-    return data_df, fitness(data_chunk, num_of_features, labels_chunk);
+    return fitness(data_features, num_of_features, labels);

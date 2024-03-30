@@ -17,6 +17,8 @@ def crossover(chromosomes, parents_count):
         
     if (parents_count % 2 != 0):    # if the parents_count is odd
         chromosomes.append(chromosomes[parents_count-1])    # append the last parent
+    else:
+        chromosomes.append(chromosomes[0])    # append the first parent (best chromosome)
         
     
 def mutation(chromosomes, mutation_rate, parents_count):

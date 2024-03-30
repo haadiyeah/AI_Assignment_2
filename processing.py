@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 def combine_data(data):
     print("Combining data...");
@@ -16,6 +18,10 @@ def read_csv_files(directory):
         if filename.endswith(".csv"):
             df = pd.read_csv(os.path.join(directory, filename), usecols=range(298, 638))    # 298 - 637 columns
             file_parts = filename.split('-')
+            
+            if file_parts[2] != '03' and file_parts[2] != '04':
+                continue;
+            
             if file_parts[2] == '03':
                 df['label'] = 0
             elif file_parts[2] == '04':
@@ -46,3 +52,19 @@ def save_best_chromosome(chromosome, fitness, iterations, population, mutation_r
         f.write("Fitness: ");
         f.write(str(fitness));
         f.write("\n\n");
+        
+def plot_graph(local_bests):
+    # plot the local best fitnesses
+    plt.plot(range(1, len(local_bests) + 1), local_bests, color='red')  # line color
+    plt.scatter(range(1, len(local_bests) + 1), local_bests, color='black')  # point color
+    plt.xlabel("Generation")
+    plt.ylabel("Fitness")
+    plt.title("Fitness of the best chromosome in each generation")
+    plt.xticks(range(1, len(local_bests) + 1))  # Set the ticks on the x-axis
+
+    # Set the ticks on the y-axis
+    y_ticks = np.concatenate([np.arange(0, 0.65, 0.1), np.arange(0.65, 1.05, 0.05)])
+    plt.yticks(y_ticks)
+    plt.ylim([0, 1])  # Set the range of the y-axis
+
+    plt.show()

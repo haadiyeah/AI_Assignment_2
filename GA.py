@@ -16,6 +16,7 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
     print("Population: ", population);
 
     global_best = {"chromosome": [], "fitness": 0};
+    local_bests = [];
     # feature selection
     for i in range(iterations):
         data_df = data.copy();
@@ -36,7 +37,9 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
         result, chromosomes = zip(*sorted(zip(result, chromosomes), reverse=True))
         result = list(result)
         chromosomes = list(chromosomes)
-        
+
+        local_bests.append(result[0])     
+           
         # update global best
         if(result[0] > global_best["fitness"]):
             global_best["chromosome"] = chromosomes[0];
@@ -57,3 +60,5 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
     print("Global best: ", global_best);
     # save the best chromosome
     save_best_chromosome(global_best["chromosome"], global_best["fitness"], iterations, population, mutation_rate);
+    
+    return global_best, local_bests;

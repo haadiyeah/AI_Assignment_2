@@ -31,17 +31,18 @@ def save_best_chromosome(chromosome, fitness, iterations, population, mutation_r
     with open("best_chromosome.txt", "a") as f:
         f.write("Iteration: ");
         f.write(str(iterations));
-        f.write(",\t");
+        f.write(", ");
         f.write("Population: ");
         f.write(str(population));
-        f.write(",\t");
+        f.write(", ");
         f.write("Mutation Rate: ");
         f.write(str(mutation_rate));
         f.write("\n");
         f.write(str(chromosome));
         f.write("\n");
         f.write("Number of features: ");
-        f.write(str(len(chromosome)));
+        f.write(str(chromosome.count(1)))
+        f.write("\n");
         f.write("Fitness: ");
         f.write(str(fitness));
         f.write("\n\n");

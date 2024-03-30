@@ -32,7 +32,6 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
         
         print("Fitnesses: ", result);
 
-        # rank selection
         # sorting chromosomes based on fitness
         result, chromosomes = zip(*sorted(zip(result, chromosomes), reverse=True))
         result = list(result)
@@ -45,9 +44,10 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
         
         print("Global best: ", global_best);
         
-        # select top 50% chromosomes
+        # rank selection, select top 50% chromosomes
         chromosomes = chromosomes[:population//2];
         parents_count = len(chromosomes);
+        
         # crossover
         crossover(chromosomes, population);
         

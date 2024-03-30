@@ -49,7 +49,7 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
         parents_count = len(chromosomes);
         
         # crossover
-        crossover(chromosomes, population);
+        crossover(chromosomes, parents_count);
         
         # mutation
         mutation(chromosomes, mutation_rate, parents_count);

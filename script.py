@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 data = get_data();
 
 # run the GA with different parameters
-gb1, lbs1 = GA(data, iterations=10, population=9, mutation_rate=0.1);
+gb1, lbs1 = GA(data, iterations=10, population=10, mutation_rate=0.1);
 gb2, lbs2 = GA(data, iterations=10, population=10, mutation_rate=0.2);
 gb3, lbs3 = GA(data, iterations=10, population=14, mutation_rate=0.1);
 gb4, lbs4 = GA(data, iterations=10, population=14, mutation_rate=0.2);

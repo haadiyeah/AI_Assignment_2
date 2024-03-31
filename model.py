@@ -40,7 +40,7 @@ def train_model(data, chromosome):
     y_test = pd.concat([y_test, removed_labels])  
 
     #create optimizer
-    opt = Adam(learning_rate=0.1)    # decreasing the learning rate for less loss
+    opt = Adam(learning_rate=0.0001)    # decreasing the learning rate for less loss
 
     # binary classification
     n_outputs = 1

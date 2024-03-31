@@ -52,10 +52,10 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
         parents_count = len(chromosomes);
         
         # crossover
-        crossover(chromosomes, parents_count);
+        crossover(chromosomes, parents_count, population);
         
         # mutation
-        mutation(chromosomes, mutation_rate, parents_count);
+        mutation(chromosomes, parents_count, mutation_rate);
         
     print("Global best: ", global_best);
     # save the best chromosome

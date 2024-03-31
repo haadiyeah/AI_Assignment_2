@@ -1,6 +1,7 @@
-from processing import get_data, save_best_chromosome
+from processing import save_best_chromosome
 from fitness import calc_fitness, create_population
 from operators import crossover, mutation
+from multiprocessing import Pool
 
 def GA(data, iterations=10, population=10, mutation_rate=0.2):
     print("Data rows: ", len(data));   # 93707
@@ -18,19 +19,17 @@ def GA(data, iterations=10, population=10, mutation_rate=0.2):
     global_best = {"chromosome": [], "fitness": 0};
     local_bests = [];
     # feature selection
-    for i in range(iterations):
+    for i in range(iterations):        
         data_df = data.copy();
         # reset indexes
         data_df.reset_index(drop=True, inplace=True);
 
-        # calculating fitness
-        result = [];
-        for j, chromosome in enumerate(chromosomes):
-            print("\nit: ", i+1, "\npop: ", j+1)
-            print("Data Length: ", data_df.shape[0])
-            fitness = calc_fitness(data_df, chromosome);
-            result.append(fitness);
         
+        # calculating fitness using multiprocessing
+        with Pool() as p:
+            result = p.starmap(calc_fitness, [(data_df, chromosome) for chromosome in chromosomes])
+        
+        print("Iteration: ", i+1);
         print("Fitnesses: ", result);
 
         # sorting chromosomes based on fitness

@@ -1,4 +1,3 @@
-from processing import get_data
 from fitness import get_feature_df
 from keras.models import Sequential
 from keras.layers import Dense

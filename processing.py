@@ -63,8 +63,8 @@ def plot_graph(local_bests):
     plt.xticks(range(1, len(local_bests) + 1))  # Set the ticks on the x-axis
 
     # Set the ticks on the y-axis
-    y_ticks = np.concatenate([np.arange(0, 0.65, 0.1), np.arange(0.65, 1.05, 0.05)])
+    y_ticks = np.arange(0.9, 0.93, 0.005)
     plt.yticks(y_ticks)
-    plt.ylim([0, 1])  # Set the range of the y-axis
+    plt.ylim([0.9, 0.93])  # Set the range of the y-axis
 
     plt.show()
